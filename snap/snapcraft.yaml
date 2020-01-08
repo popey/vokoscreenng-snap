@@ -1,0 +1,108 @@
+name: vokoscreen-ng
+base: core18
+version: "3.0.0"
+summary: Vokoscreen NG
+description: |
+  This is my-snap's description. You have a paragraph or two to tell the
+  most important story about your snap. Keep it under 100 words though,
+  we live in tweetspace and your description wants to look good in the snap
+  store.
+
+grade: stable
+confinement: strict
+
+apps:
+  vokoscreen-ng:
+    command: desktop-launch $SNAP/vokoscreenNG
+    environment:
+      LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio:$LD_LIBRARY_PATH
+    plugs:
+      - desktop
+      - desktop-legacy
+      - x11
+      - opengl
+      - pulseaudio
+      - home
+      - removable-media
+      - network
+      - unity7
+      - mount-observe
+      - camera
+
+parts:
+  vokoscreen-ng:
+    plugin: qmake
+    source: https://github.com/vkohaupt/vokoscreenNG.git
+    source-subdir: src
+    source-tag: $SNAPCRAFT_PROJECT_VERSION
+    override-pull: |
+      snapcraftctl pull
+      last_committed_tag="$(git describe --tags --abbrev=0)"
+      last_released_tag="$(snap info $SNAPCRAFT_PROJECT_NAME | awk '$1 == "beta:" { print $2 }')"
+      # If the latest tag from the upstream project has not been released to
+      # beta, build that tag instead of master.
+      if [ "${last_committed_tag}" != "${last_released_tag}" ]; then
+        git fetch
+        git checkout "${last_committed_tag}"
+        snapcraftctl set-version "${last_committed_tag#v}"
+      else
+        snapcraftctl set-version "$(grep 'QString version' global.cpp | awk -F '\"' '{ print $2 }')"
+      fi
+    override-build: |
+      snapcraftctl build 
+      cp src/vokoscreenNG $SNAPCRAFT_PART_INSTALL/
+    build-packages:
+      - pkg-config
+      - qttools5-dev-tools
+      - qtmultimedia5-dev
+      - libqt5x11extras5-dev
+      - libgstreamer1.0-dev
+    stage-packages:
+      - gstreamer1.0-plugins-bad
+      - gstreamer1.0-plugins-ugly
+      - gstreamer1.0-vaapi
+      - gstreamer1.0-libav
+      - gstreamer1.0-pulseaudio 
+      - libqt5multimedia5-plugins
+      - libqt5x11extras5
+      - pulseaudio 
+      - gstreamer1.0-plugins-good
+      - libglib2.0-0
+      - libgstreamer1.0-0
+      - libqt5core5a
+      - libqt5gui5
+      - libqt5multimedia5
+      - libqt5network5
+      - libstdc++6
+      - libx11-6
+      - libglu1-mesa
+      - libgpm2
+      - freeglut3
+      - libslang2
+      - libgdk-pixbuf2.0-0
+  desktop-qt5:
+    build-packages:
+      - build-essential
+      - qtbase5-dev
+      - dpkg-dev
+    make-parameters:
+      - FLAVOR=qt5
+    plugin: make
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-subdir: qt
+    stage-packages:
+      - libxkbcommon0
+      - ttf-ubuntu-font-family
+      - dmz-cursor-theme
+      - light-themes
+      - adwaita-icon-theme
+      - gnome-themes-standard
+      - shared-mime-info
+      - libqt5gui5
+      - libgdk-pixbuf2.0-0
+      - libqt5svg5
+      - try:
+        - appmenu-qt5
+      - locales-all
+      - xdg-user-dirs
+      - fcitx-frontend-qt5
