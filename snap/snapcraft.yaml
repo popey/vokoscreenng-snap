@@ -21,7 +21,8 @@ apps:
       - desktop-legacy
       - x11
       - opengl
-      - pulseaudio
+      - audio-playback
+      - audio-record
       - home
       - removable-media
       - network
