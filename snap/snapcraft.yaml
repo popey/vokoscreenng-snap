@@ -47,7 +47,7 @@ parts:
         git checkout "${last_committed_tag}"
         snapcraftctl set-version "${last_committed_tag#v}"
       else
-        snapcraftctl set-version "$(grep 'QString version' global.cpp | awk -F '\"' '{ print $2 }')"
+        snapcraftctl set-version "$(grep 'QString version' src/global.cpp | awk -F '\"' '{ print $2 }' | tail -n 1 | tr ' ' '-')"
       fi
     override-build: |
       snapcraftctl build 
@@ -81,6 +81,7 @@ parts:
       - freeglut3
       - libslang2
       - libgdk-pixbuf2.0-0
+      - libgtk2.0-0
   desktop-qt5:
     build-packages:
       - build-essential
